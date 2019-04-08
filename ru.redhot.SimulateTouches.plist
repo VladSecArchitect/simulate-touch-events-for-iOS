@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>ru.redhot.SimulateTouches</string>
+
+        <key>MachServices</key>
+        <dict>
+            <key>ru.redhot.SimulateTouches</key>
+            <true/>
+        </dict>
+
+        <key>ProgramArguments</key>
+        <array>
+            <string>/bin/touches</string>
+        </array>
+
+        <key>RunAtLoad</key><true/>
+        <key>KeepAlive</key>
+        <dict>
+            <key>SuccessfulExit</key><true/>
+            <key>Crashed</key><true/>
+        </dict>
+
+        <key>StartInterval</key><integer>3600</integer>
+
+        <key>StandardInPath</key><string>/tmp/test.stdin</string>
+        <key>StandardOutPath</key><string>/tmp/test.stdout</string>
+        <key>StandardErrorPath</key><string>/tmp/test.stderr</string>
+        <key>WorkingDirectory</key><string>/tmp</string>
+
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>PATH</key>
+            <string>/bin:/usr/bin:/usr/local/bin</string>
+        </dict>
+
+        <key>UserName</key><string>mobile</string>
+
+        <key>Sockets</key>
+        <dict>
+            <key>Listeners</key>
+            <dict>
+                <key>SockServiceName</key>
+                <string>333</string>
+                <key>SockType</key>
+                <string>dgram</string>
+                <key>SockFamily</key>
+                <string>IPv4</string>
+            </dict>
+        </dict>
+    </dict>
+</plist>
