@@ -1,5 +1,21 @@
+# macOS I/O Registry - Multitouch Device Information
+
+## Overview
+Output of `ioreg` command showing I/O Registry hierarchy for multitouch device (trackpad) on macOS.
+
+This document contains the IORegistry tree output showing the hierarchy of IOKit devices, focusing on multitouch device information and properties needed for touch event simulation.
+
+## Commands Used
+```bash
 ioreg -l -b -t
 ioreg -l -b -t | grep -i "AppleMultitouchDevice"
+```
+
+## Registry Tree
+```ioreg
+ioreg -l -b -t
+ioreg -l -b -t | grep -i "AppleMultitouchDevice"
+
 
 
     | +-o IOPMrootDomain  <class IOPMrootDomain, id 0x1000001b9, registered, matched, active, busy 0 (493 ms), retain 128>
@@ -316,3 +332,19 @@ ioreg -l -b -t | grep -i "AppleMultitouchDevice"
     | |   |                         "IOUserClientCreator" = "pid 1391, backboardd"
     | |   |                       }
     | |   |
+```
+
+## Device Capabilities
+- Multitouch gestures
+- Force Touch (pressure sensitivity)
+- Built-in device
+- Power control support
+- HID service support
+
+## Technical Details
+- Family ID: 93
+- Multitouch ID: 144115188075855942
+- Location ID: 70
+- Version: 1846
+- Transport: SPI
+- Max Packet Size: 1208 bytes
