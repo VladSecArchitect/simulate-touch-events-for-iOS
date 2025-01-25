@@ -36,19 +36,26 @@ A tool for simulating touch events on iOS devices through XPC services and IOKit
 ## Architecture
 ```
 ┌─────────────────────────────────────────────┐
-│               User Applications              │
+│               User Applications             │
+├─────────────────────────────────────────────┤
+│               Cocoa Touch                   │
+│     (AddressBook, MessageUI, StoreKit)      │
+├─────────────────────────────────────────────┤
+│               Media Layer                   │
+│  (Core Animation, OpenGL ES, Core Graphics) │
 ├─────────────────────────────────────────────┤
 │          UIKit / CoreGraphics               │
+│    (UIKit, WebKit, MapKit, Core Location)   │
 ├─────────────────────────────────────────────┤
-│               IOKit Framework               │
-│  ┌─────────────────┐    ┌────────────────┐  │ ◄── XPC Client
+│               IOKit Framework               │ ◄── Project Level 1:
+│  ┌─────────────────┐    ┌────────────────┐  │     XPC Client
 │  │  Touch Service  │    │  XPC Service   │  │     (xpc_client.mm)
-│  └─────────────────┘    └────────────────┘  │
+│  └─────────────────┘    └────────────────┘  │     Uses: IOKit, XPC
 ├─────────────────────────────────────────────┤
-│              IOKit Driver Layer             │ ◄── Touch Service
-│  ┌─────────────────┐    ┌────────────────┐  │     (main.mm)
-│  │   HID Driver    │    │  Power Mgmt    │  │
-│  └─────────────────┘    └────────────────┘  │
+│              IOKit Driver Layer             │ ◄── Project Level 2:
+│  ┌─────────────────┐    ┌────────────────┐  │     Touch Service
+│  │   HID Driver    │    │  Power Mgmt    │  │     (main.mm)
+│  └─────────────────┘    └────────────────┘  │     Uses: IOHIDFamily
 ├─────────────────────────────────────────────┤
 │                  HAL Layer                  │
 │  ┌─────────────────┐    ┌────────────────┐  │
@@ -58,23 +65,44 @@ A tool for simulating touch events on iOS devices through XPC services and IOKit
 │              Hardware (Touch IC)            │
 └─────────────────────────────────────────────┘
 ```
-
 The project operates at two levels:
 1. XPC Client (xpc_client.mm) - at IOKit Framework level
-2. Touch Service (main.mm) - at IOKit Driver Layer level
+   - Handles user input and XPC communication
+   - Creates secure XPC connection to service
+   - Manages connection lifecycle and error handling
+   - Serializes touch coordinates for transmission
 
-This architecture allows:
-- Client: to communicate with the service via XPC
-- Service: to directly interact with HID driver for touch event simulation
+2. Touch Service (main.mm) - at IOKit Driver Layer level
+   - Creates HID system client (IOHIDEventSystemClientCreateWithType)
+   - Manages RunLoop integration for event processing
+   - Handles system signals and lifecycle
 
 ## Low-Level Integration
-The project integrates directly with iOS system components:
-- Direct access to HID driver through IOKit interfaces
-- Hardware event simulation at driver level
-- Raw touch event injection into input system
-- Power management state handling
-- Direct memory access for touch event buffers
-- Hardware interrupt handling
+The project integrates directly with iOS system components through several layers:
+
+### HID Event System Integration
+- Creates direct connection to HID system using IOHIDEventSystemClient
+- Schedules event processing with system RunLoop
+- Manages hardware timing using mach_absolute_time()
+
+### Touch Event Simulation
+- Creates digitizer events (IOHIDEventCreateDigitizerEvent):
+  - Configures transducer type for hand simulation
+  - Sets display integration parameters
+  - Manages event masks for touch states
+- Simulates finger events (IOHIDEventCreateDigitizerFingerEventWithQuality):
+  - Handles touch down/move/up states
+  - Maps coordinates to digitizer space
+  - Controls touch pressure and quality
+
+### Event Dispatch Chain
+1. Client sends coordinates via XPC
+2. Service receives and validates data
+3. Service creates HID event with hardware parameters
+4. Event is injected directly into HID system
+5. System processes event as hardware input
+
+This low-level approach bypasses higher iOS input layers, simulating events at hardware level.
 
 ## Installation
 
@@ -148,3 +176,4 @@ MIT
 - Requires proper entitlements for hardware access
 - May require security bypass on newer iOS versions
 - Use with caution on production devices
+
